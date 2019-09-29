@@ -6,10 +6,10 @@ from keras.layers import Conv2D, MaxPooling2D, BatchNormalization
 from keras.callbacks import ReduceLROnPlateau
 from sklearn.model_selection import StratifiedKFold
 
-# Ucitavanje FashionMNIST skupa podataka
+# Load FashionMNIST data set
 (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
 
-# Koristimo samo deo trening skupa (prvi od 10 fold-ova) radi efikasnosti treninga
+# Using only a part of the test set (first of 10 folds)
 skf = StratifiedKFold(n_splits=6, random_state=0, shuffle=False)
 for train_index, test_index in skf.split(x_train, y_train):
     x_train, y_train = x_train[test_index], y_train[test_index]
@@ -21,8 +21,7 @@ print(x_train.shape, y_train.shape)
 print(x_test.shape, y_test.shape)
 
 #################################################################################
-# U ovoj sekciji implementirati Keras neuralnu mrezu koja postize tacnost barem
-# 85% na test skupu. Ne menjati fajl van ove sekcije.
+# Training the model
 
 x_train = x_train.reshape(10000, 28, 28, 1)
 x_test = x_test.reshape(10000, 28, 28, 1)
@@ -86,5 +85,5 @@ print('Test accuracy:', scores[1])
 
 #################################################################################
 
-# Cuvanje istreniranog modela u fajl
+# Save the model to a file
 model.save('model.h5')

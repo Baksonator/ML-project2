@@ -5,20 +5,17 @@ import sys
 from copy import deepcopy
 from matplotlib import pyplot as plt
 
-# Prvi i jedini argument komandne linije je indeks test primera
 if len(sys.argv) != 2:
-    print("Neispravno pozvan fajl, koristiti komandu \"python3 main.py X\" za pokretanje na test primeru sa brojem X")
+    print("Invalid arguments")
     exit(0)
 
 tp_idx = sys.argv[1]
 img = cv2.imread('tests/{}.png'.format(tp_idx))
 
 #################################################################################
-# U ovoj sekciji implementirati obradu slike, ucitati prethodno trenirani Keras
-# model, i dodati bounding box-ove i imena klasa na sliku.
-# Ne menjati fajl van ove sekcije.
+# Image processing
 
-# Ucitavamo model
+# Load the model
 model = keras.models.load_model('model.h5')
 
 solution = img.copy()
@@ -150,20 +147,14 @@ for i in range(len(boundingBoxes)):
     if imageWidth > imageHeight:
         newImage = np.full((imageWidth, imageWidth), 255, np.uint8)
         razlika = (imageWidth - imageHeight) // 2
-        # boundingBox = (boundingBoxes[i][0], boundingBoxes[i][1] - (imageWidth - imageHeight) // 2, boundingBoxes[i][2], boundingBoxes[i][3])
         newImage[razlika : razlika + boundingBoxes[i][3], :] = solution_gray[boundingBoxes[i][1]: boundingBoxes[i][1] + boundingBoxes[i][3],
                      boundingBoxes[i][0]: boundingBoxes[i][0] + boundingBoxes[i][2]]
-        # firstImage = solution[boundingBox[1]: boundingBox[1] + boundingBox[2],
-        #              boundingBox[0]: boundingBox[0] + boundingBox[2]]
         res = cv2.resize(newImage, None, fx=28 / imageWidth, fy=28 / imageWidth, interpolation=cv2.INTER_AREA)
     else:
         newImage = np.full((imageHeight, imageHeight), 255, np.uint8)
         razlika = (imageHeight - imageWidth) // 2
-        # boundingBox = (boundingBoxes[i][0] - (imageHeight - imageWidth) // 2, boundingBoxes[i][1], boundingBoxes[i][2], boundingBoxes[i][3])
         newImage[:, razlika: razlika + boundingBoxes[i][2]] = solution_gray[boundingBoxes[i][1]: boundingBoxes[i][1] + boundingBoxes[i][3],
                      boundingBoxes[i][0]: boundingBoxes[i][0] + boundingBoxes[i][2]]
-        # firstImage = solution[boundingBox[1]: boundingBox[1] + boundingBox[3],
-        #              boundingBox[0] : boundingBox[0] + boundingBox[3]]
         res = cv2.resize(newImage, None, fx=28 / imageHeight, fy=28 / imageHeight, interpolation=cv2.INTER_AREA)
 
     # Inverting bits needed because model i trained on black background
@@ -175,15 +166,12 @@ for i in range(len(boundingBoxes)):
     res = cv2.resize(res, (28, 28))
 
     # Reshaping to suit model
-    # res = cv2.cvtColor(res, cv2.COLOR_BGR2GRAY)
     res = res.reshape(1, 28, 28, 1)
 
     # Prediction and drawing predicted class
     probabilities = model.predict(res)
-    # print(probabilities)
     prediction = probabilities.argmax()
     label = labelNames[prediction]
-    # print(label)
     font = cv2.FONT_HERSHEY_SIMPLEX
     draw = cv2.putText(img, label, (boundingBoxes[i][0], boundingBoxes[i][1]), font, 0.5, (0, 0, 255), 1,
                        cv2.LINE_AA)
@@ -196,5 +184,5 @@ cv2.waitKey(0)
 
 #################################################################################
 
-# Cuvamo resenje u izlazni fajl
+# Save solution to output file
 cv2.imwrite("tests/out_{}.png".format(tp_idx), solution)
